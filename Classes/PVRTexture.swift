@@ -2,7 +2,7 @@
 //  PVRTexture.swift
 //  GLTextureAtlas
 //
-//  Created by 開発 on 2015/12/27.
+//  Translated by OOPer in cooperation with shlab.jp, on 2015/12/27.
 //
 //
 /*
