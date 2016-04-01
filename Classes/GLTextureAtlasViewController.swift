@@ -86,6 +86,13 @@ private struct Particle {
 private var butterflies: [Particle] = Array(count: NUM_IMPOSTERS, repeatedValue: Particle())
 
 
+private func comp(p1: UnsafePointer<Void>, p2: UnsafePointer<Void>) -> Int32 {
+    let d = (UnsafePointer<Particle>(p1)).memory.tz - (UnsafePointer<Particle>(p2)).memory.tz
+    if d < 0 {return -1}
+    if d > 0 {return 1}
+    return p1 > p2 ? 1 : p1 < p2 ? -1 : 0
+}
+
 @objc(GLTextureAtlasViewController)
 class GLTextureAtlasViewController: GLKViewController {
     //to simulate the fly effect
@@ -201,14 +208,7 @@ class GLTextureAtlasViewController: GLKViewController {
         
         glMatrixMode(GL_MODELVIEW.ui)
     }
-    
-    private let comp: @convention(c) (UnsafePointer<Void>, UnsafePointer<Void>) -> Int32 = {p1, p2 in
-        let d = (UnsafePointer<Particle>(p1)).memory.tz - (UnsafePointer<Particle>(p2)).memory.tz
-        if d < 0 {return -1}
-        if d > 0 {return 1}
-        return p1 > p2 ? 1 : p1 < p2 ? -1 : 0
-    }
-    
+
     override func glkView(view: GLKView, drawInRect rect: CGRect) {
         struct My {
             static var s: GLfloat = 1, sz: GLfloat = 1
@@ -279,6 +279,7 @@ class GLTextureAtlasViewController: GLKViewController {
             butterflies[i].ty = sinx * p2 + cosx * p3
             butterflies[i].tz = cosx * p2 - sinx * p3
         }
+        //(<#T##UnsafeMutablePointer<Void>#>, <#T##Int#>, <#T##Int#>, <#T##((UnsafePointer<Void>, UnsafePointer<Void>) -> Int32)!##((UnsafePointer<Void>, UnsafePointer<Void>) -> Int32)!##(UnsafePointer<Void>, UnsafePointer<Void>) -> Int32#>)
         qsort(&butterflies, NUM_IMPOSTERS, strideof(Particle), comp)
         
         // the interleaved array including position and texture coordinate data of all vertices
@@ -371,7 +372,7 @@ class GLTextureAtlasViewController: GLKViewController {
                 // update width scale to simulate the fly effect
                 widthScaleIndex = widthScaleIndex < 7 ? widthScaleIndex+1 : 0
             }
-            frameCount++
+            frameCount += 1
         }
     }
     

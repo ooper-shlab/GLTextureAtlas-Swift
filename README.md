@@ -16,7 +16,7 @@ See license terms in each file.
 ===========================================================================
 BUILD REQUIREMENTS:
 
-Xcode 7.2, iOS SDK 9.2
+Xcode 7.3, iOS SDK 9.3
 
 ===========================================================================
 RUNTIME REQUIREMENTS:

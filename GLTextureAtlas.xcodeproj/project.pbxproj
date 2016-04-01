@@ -31,7 +31,6 @@
 		D703852A1C2FF4FC0085EAB4 /* GenericArithmetic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70385291C2FF4FC0085EAB4 /* GenericArithmetic.swift */; };
 		D703852C1C2FF5200085EAB4 /* NumTypes+Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D703852B1C2FF5200085EAB4 /* NumTypes+Conversion.swift */; };
 		D703852E1C301E550085EAB4 /* GLTextureAtlasAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D703852D1C301E550085EAB4 /* GLTextureAtlasAppDelegate.swift */; };
-		D70385301C3025A90085EAB4 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D703852F1C3025A90085EAB4 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -255,7 +254,6 @@
 				D703852C1C2FF5200085EAB4 /* NumTypes+Conversion.swift in Sources */,
 				D70385281C2FF4720085EAB4 /* GLTextureAtlasViewController.swift in Sources */,
 				D703852A1C2FF4FC0085EAB4 /* GenericArithmetic.swift in Sources */,
-				D70385301C3025A90085EAB4 /* README.md in Sources */,
 				D70385241C2FC9CA0085EAB4 /* PVRTexture.swift in Sources */,
 				D70385261C2FCAFF0085EAB4 /* FourCharCode+StringLiteralConvertible.swift in Sources */,
 				D703852E1C301E550085EAB4 /* GLTextureAtlasAppDelegate.swift in Sources */,
