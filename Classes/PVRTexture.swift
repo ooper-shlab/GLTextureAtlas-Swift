@@ -59,23 +59,23 @@ import OpenGLES.ES1.glext
 
 @objc(PVRTexture)
 class PVRTexture: NSObject {
-    var _imageData: [NSData] = []
+    var _imageData: [Data] = []
     
     //GLuint _name;
-    private(set) var width: UInt32 = 0
-    private(set) var height: UInt32 = 0
-    private(set) var internalFormat: GLenum = GLenum(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
-    private(set) var hasAlpha: Bool = false
+    fileprivate(set) var width: UInt32 = 0
+    fileprivate(set) var height: UInt32 = 0
+    fileprivate(set) var internalFormat: GLenum = GLenum(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
+    fileprivate(set) var hasAlpha: Bool = false
     
     //@property (readonly) GLuint name;
-    private(set) var name: GLuint = 0
+    fileprivate(set) var name: GLuint = 0
     
-    private let PVR_TEXTURE_FLAG_TYPE_MASK: UInt32 = 0xff
+    fileprivate let PVR_TEXTURE_FLAG_TYPE_MASK: UInt32 = 0xff
     
-    private let gPVRTexIdentifier: FourCharCode = "PVR!"
+    fileprivate let gPVRTexIdentifier: FourCharCode = "PVR!"
     
-    private let kPVRTextureFlagTypePVRTC_2: UInt32 = 24
-    private let kPVRTextureFlagTypePVRTC_4: UInt32 = 25
+    fileprivate let kPVRTextureFlagTypePVRTC_2: UInt32 = 24
+    fileprivate let kPVRTextureFlagTypePVRTC_4: UInt32 = 25
     
     struct PVRTexHeader {
         var headerLength: UInt32 = 0
@@ -97,9 +97,9 @@ class PVRTexture: NSObject {
     //@synthesize name = _name;
     
     
-    private func unpackPVRData(data: NSData) -> Bool {
+    fileprivate func unpackPVRData(_ data: Data) -> Bool {
         var success = false
-        var header: UnsafeMutablePointer<PVRTexHeader> = nil
+        var header: UnsafeMutablePointer<PVRTexHeader>? = nil
         var flags: UInt32 = 0
         var pvrTag: UInt32 = 0
         var dataLength: UInt32 = 0
@@ -111,18 +111,18 @@ class PVRTexture: NSObject {
         var width: UInt32 = 0
         var height: UInt32 = 0
         var bpp: UInt32 = 0
-        var bytes: UnsafeMutablePointer<UInt8> = nil
+        var bytes: UnsafeMutablePointer<UInt8>? = nil
         var formatFlags: UInt32 = 0
         
-        header = UnsafeMutablePointer(data.bytes)
+        header = UnsafeMutablePointer(mutating: (data as NSData).bytes.bindMemory(to: PVRTexture.PVRTexHeader.self, capacity: data.count))
         
-        pvrTag = FourCharCode(networkOrder: header.memory.pvrTag)
+        pvrTag = FourCharCode(networkOrder: (header?.pointee.pvrTag)!)
         
         guard gPVRTexIdentifier == pvrTag else {
             return false
         }
         
-        flags = CFSwapInt32LittleToHost(header.memory.flags)
+        flags = CFSwapInt32LittleToHost((header?.pointee.flags)!)
         formatFlags = flags & PVR_TEXTURE_FLAG_TYPE_MASK
         
         if formatFlags == kPVRTextureFlagTypePVRTC_4 || formatFlags == kPVRTextureFlagTypePVRTC_2 {
@@ -134,20 +134,20 @@ class PVRTexture: NSObject {
                 internalFormat = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG.ui
             }
             
-            width = CFSwapInt32LittleToHost(header.memory.width)
+            width = CFSwapInt32LittleToHost((header?.pointee.width)!)
             self.width = width
-            height = CFSwapInt32LittleToHost(header.memory.height)
+            height = CFSwapInt32LittleToHost((header?.pointee.height)!)
             self.height = height
             
-            if CFSwapInt32LittleToHost(header.memory.bitmaskAlpha) != 0 {
+            if CFSwapInt32LittleToHost((header?.pointee.bitmaskAlpha)!) != 0 {
                 hasAlpha = true
             } else {
                 hasAlpha = false
             }
             
-            dataLength = CFSwapInt32LittleToHost(header.memory.dataLength)
+            dataLength = CFSwapInt32LittleToHost((header?.pointee.dataLength)!)
             
-            bytes = UnsafeMutablePointer(data.bytes) + strideof(PVRTexHeader)
+            bytes = UnsafeMutablePointer(mutating: (data as NSData).bytes.bindMemory(to: UInt8.self, capacity: data.count)) + MemoryLayout<PVRTexHeader>.stride
             
             // Calculate the data size for each texture level and respect the minimum number of blocks
             while dataOffset < dataLength {
@@ -173,7 +173,7 @@ class PVRTexture: NSObject {
                 
                 dataSize = widthBlocks * heightBlocks * ((blockSize  * bpp) / 8)
                 
-                _imageData.append(NSData(bytes: bytes + dataOffset.l, length: dataSize.l))
+                _imageData.append(Data(bytes: UnsafePointer<UInt8>(bytes! + dataOffset.l), count: dataSize.l))
                 
                 dataOffset += dataSize
                 
@@ -188,7 +188,7 @@ class PVRTexture: NSObject {
     }
     
     
-    private func createGLTexture() -> Bool {
+    fileprivate func createGLTexture() -> Bool {
         var width = self.width
         var height = self.height
         
@@ -201,8 +201,8 @@ class PVRTexture: NSObject {
         glBindTexture(GL_TEXTURE_2D, _name);
         }*/
         
-        for (i, data) in _imageData.enumerate() {
-            glCompressedTexImage2D(GL_TEXTURE_2D.ui, i.i, internalFormat, width.i, height.i, 0, data.length.i, data.bytes)
+        for (i, data) in _imageData.enumerated() {
+            glCompressedTexImage2D(GL_TEXTURE_2D.ui, i.i, internalFormat, width.i, height.i, 0, data.count.i, (data as NSData).bytes)
             
             let err = glGetError()
             guard err == GL_NO_ERROR.ui else {
@@ -222,7 +222,7 @@ class PVRTexture: NSObject {
     
     init?(contentsOfFile path: String) {
         super.init()
-        let data = NSData(contentsOfFile: path)
+        let data = try? Data(contentsOf: URL(fileURLWithPath: path))
         
         //_name = 0;
         
@@ -233,12 +233,12 @@ class PVRTexture: NSObject {
     }
     
     
-    convenience init?(contentsOfURL url: NSURL) {
-        guard url.fileURL else {
+    convenience init?(contentsOfURL url: URL) {
+        guard url.isFileURL else {
             return nil
         }
         
-        self.init(contentsOfFile: url.path!)
+        self.init(contentsOfFile: url.path)
     }
     
     

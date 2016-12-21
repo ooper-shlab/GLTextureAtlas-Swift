@@ -65,11 +65,11 @@ private let NUM_ROWS = 4
 
 private let NUM_IMPOSTERS = 40
 
-private func CLAMP<T: FloatComputable>(min: T, _ x: T, _ max: T) -> T {return x < min ? min : (x > max ? max : x)}
-private func DegreeToRadian<T: FloatComputable>(x: T) -> T {return x * T(M_PI) / 180.0}
+private func CLAMP<T: FloatingPoint>(_ min: T, _ x: T, _ max: T) -> T {return x < min ? min : (x > max ? max : x)}
+private func DegreeToRadian<T: BinaryFloatingPoint>(_ x: T) -> T {return x * T(M_PI) / 180.0}
 
 // get random float in [-1,1]
-private func randf<T: FloatComputable>() -> T {return T(rand() % RAND_MAX) / T(RAND_MAX) * 2.0 - 1.0}
+private func randf<T: BinaryFloatingPoint>() -> T {return T(arc4random()) / T(UInt32.max) * 2.0 - 1.0}
 
 private struct Particle {
     var x: Float = 0.0
@@ -83,34 +83,34 @@ private struct Particle {
     var c: Int32 = 0
 }
 
-private var butterflies: [Particle] = Array(count: NUM_IMPOSTERS, repeatedValue: Particle())
+private var butterflies: [Particle] = Array(repeating: Particle(), count: NUM_IMPOSTERS)
 
 
-private func comp(p1: UnsafePointer<Void>, p2: UnsafePointer<Void>) -> Int32 {
-    let d = (UnsafePointer<Particle>(p1)).memory.tz - (UnsafePointer<Particle>(p2)).memory.tz
+private func comp(_ p1: UnsafeRawPointer?, p2: UnsafeRawPointer?) -> Int32 {
+    let d = p1!.assumingMemoryBound(to: Particle.self).pointee.tz - p2!.assumingMemoryBound(to: Particle.self).pointee.tz
     if d < 0 {return -1}
     if d > 0 {return 1}
-    return p1 > p2 ? 1 : p1 < p2 ? -1 : 0
+    return p1! > p2! ? 1 : p1! < p2! ? -1 : 0
 }
 
 @objc(GLTextureAtlasViewController)
 class GLTextureAtlasViewController: GLKViewController {
     //to simulate the fly effect
-    private var widthScaleIndex = 0
-    private var frameCount = 0
+    fileprivate var widthScaleIndex = 0
+    fileprivate var frameCount = 0
     
-    private var textureAtlas: GLuint = 0
-    private var pvrTextureAtlas: PVRTexture?
+    fileprivate var textureAtlas: GLuint = 0
+    fileprivate var pvrTextureAtlas: PVRTexture?
     
-    private var inited: Bool = false
+    fileprivate var inited: Bool = false
     
-    private var context: EAGLContext!
+    fileprivate var context: EAGLContext!
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.context = EAGLContext(API: .OpenGLES1)
+        self.context = EAGLContext(api: .openGLES1)
         
         if self.context == nil {
             NSLog("Failed to create ES context")
@@ -119,7 +119,7 @@ class GLTextureAtlasViewController: GLKViewController {
         let view = self.view as! GLKView
         view.context = self.context
         
-        EAGLContext.setCurrentContext(self.context)
+        EAGLContext.setCurrent(self.context)
         
         // load the texture atlas in the PVRTC format
         if USE_4_BIT_PVR {
@@ -154,7 +154,7 @@ class GLTextureAtlasViewController: GLKViewController {
         glBlendFunc(GL_SRC_ALPHA.ui, GL_ONE_MINUS_SRC_ALPHA.ui)
     }
     
-    private func loadPVRTexture(name: String) {
+    fileprivate func loadPVRTexture(_ name: String) {
         glGenTextures(1, &textureAtlas)
         glBindTexture(GL_TEXTURE_2D.ui, textureAtlas)
         
@@ -164,7 +164,7 @@ class GLTextureAtlasViewController: GLKViewController {
         glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_S.ui, GL_CLAMP_TO_EDGE)
         glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_T.ui, GL_CLAMP_TO_EDGE)
         
-        pvrTextureAtlas = PVRTexture(contentsOfFile: NSBundle.mainBundle().pathForResource(name, ofType: "pvr")!)
+        pvrTextureAtlas = PVRTexture(contentsOfFile: Bundle.main.path(forResource: name, ofType: "pvr")!)
         
         if pvrTextureAtlas == nil {
             NSLog("Failed to load \(name).pvr")
@@ -187,8 +187,8 @@ class GLTextureAtlasViewController: GLKViewController {
         }
         pvrTextureAtlas = nil
         
-        if EAGLContext.currentContext() === self.context {
-            EAGLContext.setCurrentContext(nil)
+        if EAGLContext.current() === self.context {
+            EAGLContext.setCurrent(nil)
         }
         self.context = nil
         
@@ -209,17 +209,17 @@ class GLTextureAtlasViewController: GLKViewController {
         glMatrixMode(GL_MODELVIEW.ui)
     }
 
-    override func glkView(view: GLKView, drawInRect rect: CGRect) {
+    override func glkView(_ view: GLKView, drawIn rect: CGRect) {
         struct My {
             static var s: GLfloat = 1, sz: GLfloat = 1
             static var sanim: GLfloat = 0.001, szanim: GLfloat = 0.002
             static let widthScale: [GLfloat] = [1, 0.8, 0.6, 0.4, 0.2, 0.1, 0.6, 0.8]
             
-            private static let texInit: [GLfloat] = Array(count: 8, repeatedValue: 0)
-            static var tex: [[GLfloat]] = Array(count: NUM_COLS*NUM_ROWS, repeatedValue: texInit)
-            static var indices_all: [GLushort] = Array(count: NUM_IMPOSTERS*6, repeatedValue: 0)
+            fileprivate static let texInit: [GLfloat] = Array(repeating: 0, count: 8)
+            static var tex: [[GLfloat]] = Array(repeating: texInit, count: NUM_COLS*NUM_ROWS)
+            static var indices_all: [GLushort] = Array(repeating: 0, count: NUM_IMPOSTERS*6)
             
-            static var pos_tex_all: [GLfloat] = Array(count: NUM_IMPOSTERS*4*(3+2), repeatedValue: 0.0)
+            static var pos_tex_all: [GLfloat] = Array(repeating: 0.0, count: NUM_IMPOSTERS*4*(3+2))
         }
         
         
@@ -280,7 +280,7 @@ class GLTextureAtlasViewController: GLKViewController {
             butterflies[i].tz = cosx * p2 - sinx * p3
         }
         //(<#T##UnsafeMutablePointer<Void>#>, <#T##Int#>, <#T##Int#>, <#T##((UnsafePointer<Void>, UnsafePointer<Void>) -> Int32)!##((UnsafePointer<Void>, UnsafePointer<Void>) -> Int32)!##(UnsafePointer<Void>, UnsafePointer<Void>) -> Int32#>)
-        qsort(&butterflies, NUM_IMPOSTERS, strideof(Particle), comp)
+        qsort(&butterflies, NUM_IMPOSTERS, MemoryLayout<Particle>.stride, comp)
         
         // the interleaved array including position and texture coordinate data of all vertices
         // first position (3 floats) then tex coord (2 floats)
@@ -348,8 +348,8 @@ class GLTextureAtlasViewController: GLKViewController {
         
         My.pos_tex_all.withUnsafeBufferPointer {buf in
             let pos_tex_all = buf.baseAddress
-            glVertexPointer(3, GL_FLOAT.ui, 5*sizeof(GLfloat).i, pos_tex_all)
-            glTexCoordPointer(2, GL_FLOAT.ui, 5*sizeof(GLfloat).i, pos_tex_all+3)
+            glVertexPointer(3, GL_FLOAT.ui, 5*MemoryLayout<GLfloat>.size.i, pos_tex_all)
+            glTexCoordPointer(2, GL_FLOAT.ui, 5*MemoryLayout<GLfloat>.size.i, pos_tex_all!+3)
         }
         
         // draw all butterflies using ONE single call

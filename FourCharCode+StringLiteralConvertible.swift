@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import Foundation
 ///FourCharCode is a typealias of UInt32
-extension FourCharCode: StringLiteralConvertible {
+extension FourCharCode: ExpressibleByStringLiteral {
     public init(stringLiteral: StringLiteralType) {
         if stringLiteral.utf16.count != 4 {
             fatalError("FourCharCode length must be 4!")
@@ -70,14 +70,14 @@ extension FourCharCode: StringLiteralConvertible {
     }
     
     public var fourCharString: String {
-        let bytes: [CChar] = [
-            CChar(truncatingBitPattern: (self >> 24) & 0xFF),
-            CChar(truncatingBitPattern: (self >> 16) & 0xFF),
-            CChar(truncatingBitPattern: (self >> 8) & 0xFF),
-            CChar(truncatingBitPattern: self & 0xFF),
+        let bytes: [UInt8] = [
+            UInt8(truncatingBitPattern: (self >> 24) & 0xFF),
+            UInt8(truncatingBitPattern: (self >> 16) & 0xFF),
+            UInt8(truncatingBitPattern: (self >> 8) & 0xFF),
+            UInt8(truncatingBitPattern: self & 0xFF),
         ]
-        let data = NSData(bytes: bytes, length: 4)
-        return String(data: data, encoding: NSISOLatin1StringEncoding)!
+        let data = Data(bytes: bytes, count: 4)
+        return String(data: data, encoding: String.Encoding.isoLatin1)!
     }
     
     public var possibleFourCharString: String {
@@ -93,6 +93,6 @@ extension FourCharCode: StringLiteralConvertible {
                 bytes[i] = CChar(("?" as UnicodeScalar).value)
             }
         }
-        return String.fromCString(bytes)!
+        return String(cString: bytes)
     }
 }

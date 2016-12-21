@@ -6,7 +6,7 @@
 //
 //
 /*
-Copyright (c) 2015, OOPer(NAGATA, Atsuyuki)
+Copyright (c) 2015-2016, OOPer(NAGATA, Atsuyuki)
 All rights reserved.
 
 Use of any parts(functions, classes or any other program language components)
@@ -37,20 +37,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import Foundation
 import CoreGraphics
+/*
+ With newly introduce numeric protocols in Swift 3, such as Integer, FloatingPoint, etc.,
+ You have no need to use protocols in this file. Try to use protocols in the Swift Standard Library.
+ */
 
 protocol Computable: Comparable {
-    func +(lhs: Self, rhs: Self) -> Self
-    func -(lhs: Self, rhs: Self) -> Self
-    func /(lhs: Self, rhs: Self) -> Self
-    func *(lhs: Self, rhs: Self) -> Self
-    func %(lhs: Self, rhs: Self) -> Self
+    static func +(lhs: Self, rhs: Self) -> Self
+    static func -(lhs: Self, rhs: Self) -> Self
+    static func /(lhs: Self, rhs: Self) -> Self
+    static func *(lhs: Self, rhs: Self) -> Self
+//    static func %(lhs: Self, rhs: Self) -> Self
     
-    prefix func ++ (inout val: Self) -> Self
-    prefix func -- (inout val: Self) -> Self
-    postfix func ++ (inout val: Self) -> Self
-    postfix func -- (inout val: Self) -> Self
+//    prefix static func ++ (val: inout Self) -> Self
+//    prefix static func -- (val: inout Self) -> Self
+//    postfix static func ++ (val: inout Self) -> Self
+//    postfix static func -- (val: inout Self) -> Self
 }
-protocol IntegerInitializable: IntegerLiteralConvertible {
+protocol IntegerInitializable: ExpressibleByIntegerLiteral {
     init(_: Int)
     init(_: UInt)
     init(_: Int8)
@@ -63,17 +67,19 @@ protocol IntegerInitializable: IntegerLiteralConvertible {
     init(_: UInt64)
 }
 protocol IntegerComputable: IntegerInitializable, Computable {
-    func &+(lhs: Self, rhs: Self) -> Self
-    func &-(lhs: Self, rhs: Self) -> Self
+    static func &+(lhs: Self, rhs: Self) -> Self
+    static func &-(lhs: Self, rhs: Self) -> Self
 //    func &/(lhs: Self, rhs: Self) -> Self
-    func &*(lhs: Self, rhs: Self) -> Self
+    static func &*(lhs: Self, rhs: Self) -> Self
 //    func &%(lhs: Self, rhs: Self) -> Self
     
-    func << (lhs: Self, rhs: Self) -> Self
-    func >> (lhs: Self, rhs: Self) -> Self
+    static func << (lhs: Self, rhs: Self) -> Self
+    static func >> (lhs: Self, rhs: Self) -> Self
+    
+    static func %(lhs: Self, rhs: Self) -> Self
 }
-protocol SignedIntegerComputable: IntegerComputable, SignedNumberType {}
-protocol FloatInitializable: FloatLiteralConvertible, IntegerInitializable {
+protocol SignedIntegerComputable: IntegerComputable, SignedNumber {}
+protocol FloatInitializable: ExpressibleByFloatLiteral, IntegerInitializable {
     init(_: Float)
     init(_: Double)
     init(_: CGFloat)
