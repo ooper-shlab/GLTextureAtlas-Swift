@@ -66,7 +66,7 @@ private let NUM_ROWS = 4
 private let NUM_IMPOSTERS = 40
 
 private func CLAMP<T: FloatingPoint>(_ min: T, _ x: T, _ max: T) -> T {return x < min ? min : (x > max ? max : x)}
-private func DegreeToRadian<T: BinaryFloatingPoint>(_ x: T) -> T {return x * T(M_PI) / 180.0}
+private func DegreeToRadian<T: BinaryFloatingPoint>(_ x: T) -> T {return x * .pi / 180.0}
 
 // get random float in [-1,1]
 private func randf<T: BinaryFloatingPoint>() -> T {return T(arc4random()) / T(UInt32.max) * 2.0 - 1.0}
@@ -202,7 +202,7 @@ class GLTextureAtlasViewController: GLKViewController {
         glLoadIdentity()
         
         let fov: GLfloat = 60.0, zNear: GLfloat = 0.1, zFar: GLfloat = 1000.0, aspect: GLfloat = 1.5
-        let ymax = zNear * tan(fov * M_PI.f / 360.0)
+        let ymax = zNear * tan(fov * .pi / 360.0)
         let ymin = -ymax
         glFrustumf(ymin * aspect, ymax * aspect, ymin, ymax, zNear, zFar)
         

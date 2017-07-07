@@ -3,7 +3,7 @@
 Translated by OOPer in cooperation with shlab.jp, on 2015/12/27.
 
 Based on
-<https://developer.apple.com/library/ios/samplecode/GLTextureAtlas/Introduction/Intro.html#//apple_ref/doc/uid/DTS40009014>
+<https://developer.apple.com/library/content/samplecode/GLTextureAtlas/Introduction/Intro.html#//apple_ref/doc/uid/DTS40009014>
 2014-04-07.
 
 As this is a line-by-line translation from the original sample code, "redistribute the Apple Software in its entirety and without modifications" would apply. See license terms in each file .
@@ -16,7 +16,7 @@ See license terms in each file.
 ===========================================================================
 BUILD REQUIREMENTS:
 
-Xcode 8.2.1, iOS SDK 10
+Xcode 8.3.3, iOS SDK 10
 
 ===========================================================================
 RUNTIME REQUIREMENTS:
