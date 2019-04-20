@@ -71,10 +71,10 @@ extension FourCharCode: ExpressibleByStringLiteral {
     
     public var fourCharString: String {
         let bytes: [UInt8] = [
-            UInt8(truncatingBitPattern: (self >> 24) & 0xFF),
-            UInt8(truncatingBitPattern: (self >> 16) & 0xFF),
-            UInt8(truncatingBitPattern: (self >> 8) & 0xFF),
-            UInt8(truncatingBitPattern: self & 0xFF),
+            UInt8(truncatingIfNeeded: (self >> 24) & 0xFF),
+            UInt8(truncatingIfNeeded: (self >> 16) & 0xFF),
+            UInt8(truncatingIfNeeded: (self >> 8) & 0xFF),
+            UInt8(truncatingIfNeeded: self & 0xFF),
         ]
         let data = Data(bytes: bytes, count: 4)
         return String(data: data, encoding: String.Encoding.isoLatin1)!
@@ -82,10 +82,10 @@ extension FourCharCode: ExpressibleByStringLiteral {
     
     public var possibleFourCharString: String {
         var bytes: [CChar] = [
-            CChar(truncatingBitPattern: (self >> 24) & 0xFF),
-            CChar(truncatingBitPattern: (self >> 16) & 0xFF),
-            CChar(truncatingBitPattern: (self >> 8) & 0xFF),
-            CChar(truncatingBitPattern: self & 0xFF),
+            CChar(truncatingIfNeeded: (self >> 24) & 0xFF),
+            CChar(truncatingIfNeeded: (self >> 16) & 0xFF),
+            CChar(truncatingIfNeeded: (self >> 8) & 0xFF),
+            CChar(truncatingIfNeeded: self & 0xFF),
             0
         ]
         for i in 0..<4 {
